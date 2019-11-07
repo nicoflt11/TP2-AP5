@@ -10,6 +10,7 @@ import {
   setAsync,
 } from '../utils/storage'
 
+import OrderBuilder from './order.builder'
 import Order from './order.interface'
 import OrderService from './order.services'
 
@@ -18,6 +19,7 @@ export default class OrdersController {
   public path = '/orders'
   public pathId = '/orders/:id'
   public router = Router()
+  public orderBuilder = new OrderBuilder()
   public orderService = new OrderService()
 
   constructor() {
@@ -35,23 +37,28 @@ export default class OrdersController {
 
   public getAll = async (request: Request, response: Response) => {
     let orders: Order[] = await this.orderService.getAll()
+    for( let order of orders)
+    {
+      order = this.orderBuilder.falseAnomyne(order)
+    }
     response.json(orders).status(201)
   }
 
   public getById = async (request: Request, response: Response) => {
     const id = request.params.id
     // tslint:disable-next-line: triple-equals
-    const foundOrder: Order = await this.orderService.getById(Number(id))
+    let foundOrder: Order = await this.orderService.getById(Number(id))
     if (!foundOrder) {
       return response.sendStatus(404)
     }
-
+    foundOrder = this.orderBuilder.falseAnomyne(foundOrder)
     response.json(foundOrder)
   }
 
   public create = async (request: Request, response: Response) => {
     let newOrder =  await this.orderService.create(request.body)
-    response.status(201).json(newOrder)
+    let orderToPrint = this.orderBuilder.falseAnomyne(newOrder)
+    response.status(201).json(orderToPrint)
   }
 
   public delete = async (request: Request, response: Response) => {
